@@ -24,7 +24,8 @@ loader
 	.add("background", "https://i.ibb.co/0MKCW8n/bg.jpg")
 	.load(setup);
 
-let boid, bg;
+let boids = [], bg;
+let num = 500;
 let state;
 
 // Display
@@ -38,18 +39,23 @@ function setup(){
 	bg.scale.x = 1.5
 	bg.scale.y = 2
 
-	boid = new Sprite(resources.boid.texture);
-	boid.anchor.set(0.5);
-	boid.x = 0;
-	boid.y = app.screen.height / 2;
-	boid.scale.x = 0.5;
-	boid.scale.y = 0.5;
-
+	for (let i = 0;i<num;i++){
+		boid = new Sprite(resources.boid.texture);
+		boid.anchor.set(0.5);
+		boid.x = Math.random()*app.screen.width;
+		boid.y = Math.random()*app.screen.height;
+		boid.vx = Math.random()*5;
+		boid.vy = Math.random()*5;
+		boid.rotation = Math.random()*Math.PI*2;
+		boid.scale.x = 0.25;
+		boid.scale.y = 0.25;
+		boids.push(boid);
+		app.stage.addChild(boid);
+	}
 	
+	bg.mask = boid;
 	state = play;
 	app.stage.addChild(bg);
-	app.stage.addChild(boid);
-	bg.mask = boid;
 	app.ticker.add(delta => boidLoop(delta));
 }
 
@@ -57,12 +63,15 @@ function boidLoop(delta){
 	state(delta);
 }
 
-function move(object, distance) {
-	object.x = object.x + distance * Math.cos(object.rotation-Math.PI/2);
-	object.y = object.y + distance * Math.sin(object.rotation-Math.PI/2);
+function move(object) {
+	object.x += object.vx * Math.cos(object.rotation-Math.PI/2);
+	object.y += object.vy * Math.sin(object.rotation-Math.PI/2);
 }
 
 function play(delta){
-	move(boid, 2);
-	boid.rotation += delta * 0.01;
+	for (let i=0;i<num;i++){
+		let boid = boids[i];
+		move(boid);
+		boid.rotation += delta * 0.01;
+	}
 }
