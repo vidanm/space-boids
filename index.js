@@ -29,7 +29,7 @@ const dist_repulsive = 10;
 const dist_orienting = 25;
 const dist_attract = 50;
 let boids = [], bg;
-let num = 300;
+let num = 150;
 let state;
 let boid_container = new PIXI.Container();
 
