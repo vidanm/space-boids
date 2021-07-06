@@ -1,3 +1,4 @@
+
 // Aliases
 let loader = PIXI.Loader.shared;
 let resources = loader.resources;
@@ -8,7 +9,7 @@ const app = new PIXI.Application({
 	antialias: false,
 	width: 512,
 	height: 512,
-	backgroundColor: 0x1d1d1d,
+	backgroundColor: 0x0d0d1d,
 	resolution: 1
 });
 
@@ -24,9 +25,13 @@ loader
 	.add("background", "https://i.ibb.co/0MKCW8n/bg.jpg")
 	.load(setup);
 
+const dist_repulsive = 10;
+const dist_orienting = 20;
+const dist_attract = 30;
 let boids = [], bg;
-let num = 500;
+let num = 50;
 let state;
+let boid_container = new PIXI.Container();
 
 // Display
 function setup(){
@@ -50,9 +55,10 @@ function setup(){
 		boid.scale.x = 0.25;
 		boid.scale.y = 0.25;
 		boids.push(boid);
-		app.stage.addChild(boid);
+		boid_container.addChild(boid);
 	}
-	
+
+	app.stage.addChild(boid_container);
 	bg.mask = boid;
 	state = play;
 	app.stage.addChild(bg);
@@ -66,12 +72,76 @@ function boidLoop(delta){
 function move(object) {
 	object.x += object.vx * Math.cos(object.rotation-Math.PI/2);
 	object.y += object.vy * Math.sin(object.rotation-Math.PI/2);
+	if (object.x > window.innerWidth+2){
+		object.x = -1;
+	} else if (object.x < -2){
+		object.x = window.innerWidth+1;
+	} else if (object.y > window.innerHeight+2){
+		object.y = -1;
+	} else if (object.y < -2){
+		object.y = window.innerHeight +1;
+	}
+
 }
 
 function play(delta){
 	for (let i=0;i<num;i++){
 		let boid = boids[i];
 		move(boid);
-		boid.rotation += delta * 0.01;
+		boidsBehavior(delta);
 	}
+}
+
+function distanceBetweenTwoBoids(a, b){
+	return Math.sqrt(
+		Math.pow(b.x - a.x,2) +
+		Math.pow(b.y - a.y,2));
+}
+
+function boidsBehavior(delta){
+	// Calculer l'average heading of local flockmates
+	// l'average necessaire a l'evitement
+	// puis l'average centre de masse du groupe
+	// ensuite ajouter a la rotation
+	let a;
+	let numMate; //Number of local flockmates
+	let sumR; //sum of all the rotation rules
+	let sumVx;
+	let sumVy;
+	let moveSpeed = 0.001;
+
+	for (let i = 0;i < num;i++){
+		a = boids[i];
+		numMate = 0;
+		sumR = 0;
+		sumVx = 0;
+		sumVy = 0;
+		for (let j = 0;j < num; j++){
+			let b = boids[j];
+			let tan = ((b.x - a.x) != 0 ? Math.atan((b.y - a.y)/(b.x - a.x)) : Math.PI);
+			let dist = distanceBetweenTwoBoids(a, b);
+
+			if (dist <= dist_repulsive){
+				sumR += ((tan - Math.PI) - a.rotation)*moveSpeed*delta;
+				numMate++;
+			}
+			else if ( dist <= dist_orienting ){
+				sumR += (b.rotation - a.rotation)*moveSpeed*delta;
+				sumVx += (b.vx - a.vx)*moveSpeed*delta;
+				sumVy += (b.vy - a.vy)*moveSpeed*delta;
+				numMate++;
+			}
+			else if ( dist <= dist_attract ){
+				sumR += (tan - a.rotation)*moveSpeed*delta;
+				sumVx += (b.vx - a.vx)*moveSpeed*delta;
+				sumVy += (b.vy - a.vy)*moveSpeed*delta;
+				numMate++;
+			}
+		}
+		a.rotation += (numMate != 0 ? sumR / numMate : 0);
+		a.vx += (numMate != 0 ? sumVx / numMate : 0);
+		a.vy += (numMate != 0 ? sumVy / numMate : 0);
+		boids[i] = a;
+	}
+
 }
