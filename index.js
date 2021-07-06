@@ -26,10 +26,10 @@ loader
 	.load(setup);
 
 const dist_repulsive = 10;
-const dist_orienting = 20;
-const dist_attract = 30;
+const dist_orienting = 25;
+const dist_attract = 50;
 let boids = [], bg;
-let num = 50;
+let num = 300;
 let state;
 let boid_container = new PIXI.Container();
 
@@ -108,7 +108,7 @@ function boidsBehavior(delta){
 	let sumR; //sum of all the rotation rules
 	let sumVx;
 	let sumVy;
-	let moveSpeed = 0.001;
+	let moveSpeed = 0.05;
 
 	for (let i = 0;i < num;i++){
 		a = boids[i];
@@ -121,21 +121,23 @@ function boidsBehavior(delta){
 			let tan = ((b.x - a.x) != 0 ? Math.atan((b.y - a.y)/(b.x - a.x)) : Math.PI);
 			let dist = distanceBetweenTwoBoids(a, b);
 
-			if (dist <= dist_repulsive){
-				sumR += ((tan - Math.PI) - a.rotation)*moveSpeed*delta;
-				numMate++;
-			}
-			else if ( dist <= dist_orienting ){
-				sumR += (b.rotation - a.rotation)*moveSpeed*delta;
-				sumVx += (b.vx - a.vx)*moveSpeed*delta;
-				sumVy += (b.vy - a.vy)*moveSpeed*delta;
-				numMate++;
-			}
-			else if ( dist <= dist_attract ){
-				sumR += (tan - a.rotation)*moveSpeed*delta;
-				sumVx += (b.vx - a.vx)*moveSpeed*delta;
-				sumVy += (b.vy - a.vy)*moveSpeed*delta;
-				numMate++;
+			if (dist != 0){
+				if (dist <= dist_repulsive){
+					sumR += ((tan - Math.PI) - a.rotation)*moveSpeed*0.5*delta*(1/dist);
+					numMate++;
+				}
+				else if ( dist <= dist_orienting ){
+					sumR += (b.rotation - a.rotation)*moveSpeed*delta*(1/dist);
+					sumVx += (b.vx - a.vx)*moveSpeed*delta*(1/dist);
+					sumVy += (b.vy - a.vy)*moveSpeed*delta*(1/dist);
+					numMate++;
+				}
+				else if ( dist <= dist_attract ){
+					sumR += (tan - a.rotation)*moveSpeed*delta*(1/dist);
+					sumVx += (b.vx - a.vx)*moveSpeed*delta*(1/dist);
+					sumVy += (b.vy - a.vy)*moveSpeed*delta*(1/dist);
+					numMate++;
+				}
 			}
 		}
 		a.rotation += (numMate != 0 ? sumR / numMate : 0);
