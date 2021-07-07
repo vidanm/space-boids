@@ -3,16 +3,17 @@
 let loader = PIXI.Loader.shared;
 let resources = loader.resources;
 let Sprite = PIXI.Sprite;
-let windowWidth = 512;
-let windowHeight = 512;
+let windowWidth = window.innerWidth;
+let windowHeight = window.innerHeight;
 
 // Init rendering window
 const app = new PIXI.Application({
 	antialias: false,
 	width: windowWidth,
 	height: windowHeight,
-	backgroundColor: 0x0d0d1d,
-	resolution: 1
+	resolution: 1,
+	//preserveDrawingBuffer: true,
+	//clearBeforeRender: false
 });
 
 //app.renderer.view.style.position = "absolute";
@@ -25,7 +26,7 @@ document.body.appendChild(app.view);
 //Loading Resources
 loader
 	.add("boid", "https://i.ibb.co/cgvM29P/boid.png")
-	.add("background", "https://i.ibb.co/0MKCW8n/bg.jpg")
+	.add("background", "https://i.ibb.co/Fxh3vG7/blurred-background-5262455-960-720.jpg")
 	.load(setup);
 
 const dist_repulsive = 10;
@@ -39,13 +40,20 @@ let boid_container = new PIXI.Container();
 // Display
 function setup(){
 	
-	let blurFilter = new PIXI.filters.BlurFilter();
-	blurFilter.blur = 0;
+	let refFilter = new PIXI.filters.ReflectionFilter();
+	refFilter.mirror = false;
+	refFilter.boundary = 0;
+	refFilter.waveLength = [50,80];
+	refFilter.amplitude = [0,10];
+	refFilter.time = 0.1;
+
+	let sepFilter = new PIXI.filters.ColorMatrixFilter;
+	sepFilter.sepia(255);
+	let lightmapFilter = new PIXI.filters.RGBSplitFilter();
 
 	bg = new Sprite(resources.background.texture);
-	bg.filters = [blurFilter];
-	bg.scale.x = 1.5
-	bg.scale.y = 2
+	bg.scale.x = 5
+	bg.scale.y = 5
 
 	for (let i = 0;i<num;i++){
 		boid = new Sprite(resources.boid.texture);
@@ -55,12 +63,14 @@ function setup(){
 		boid.vx = Math.random()*3;
 		boid.vy = Math.random()*3;
 		boid.rotation = Math.random()*Math.PI*2;
-		boid.scale.x = 0.25;
-		boid.scale.y = 0.25;
+		boid.scale.x = 0.5;
+		boid.scale.y = 0.5;
 		boids.push(boid);
 		boid_container.addChild(boid);
 	}
 
+	app.stage.filterArea = app.screen;
+	app.stage.filters = [sepFilter, refFilter];
 	app.stage.addChild(boid_container);
 	state = play;
 	app.ticker.add(delta => boidLoop(delta));
