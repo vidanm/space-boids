@@ -63,8 +63,10 @@ function setup(){
 		boid.vx = Math.random()*3;
 		boid.vy = Math.random()*3;
 		boid.rotation = Math.random()*Math.PI*2;
-		boid.scale.x = 0.5;
-		boid.scale.y = 0.5;
+		boid.tint = "0x" + Math.floor(Math.random()*16777215).toString(16);
+		const size = Math.random()+0.2;
+		boid.scale.x = size;
+		boid.scale.y = size;
 		boids.push(boid);
 		boid_container.addChild(boid);
 	}
