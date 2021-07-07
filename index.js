@@ -3,19 +3,22 @@
 let loader = PIXI.Loader.shared;
 let resources = loader.resources;
 let Sprite = PIXI.Sprite;
+let windowWidth = 512;
+let windowHeight = 512;
 
 // Init rendering window
 const app = new PIXI.Application({
 	antialias: false,
-	width: 512,
-	height: 512,
+	width: windowWidth,
+	height: windowHeight,
 	backgroundColor: 0x0d0d1d,
 	resolution: 1
 });
 
-app.renderer.view.style.position = "absolute";
+//app.renderer.view.style.position = "absolute";
 app.renderer.view.style.display = "block";
-app.renderer.resize(window.innerWidth, window.innerHeight);
+app.renderer.view.style.margin = "auto";
+//app.renderer.resize(windowWidth, windowHeight);
 document.body.appendChild(app.view);
 
 
@@ -59,9 +62,7 @@ function setup(){
 	}
 
 	app.stage.addChild(boid_container);
-	bg.mask = boid_container;
 	state = play;
-	app.stage.addChild(bg);
 	app.ticker.add(delta => boidLoop(delta));
 }
 
@@ -72,14 +73,14 @@ function boidLoop(delta){
 function move(object) {
 	object.x += object.vx * Math.cos(object.rotation-Math.PI/2);
 	object.y += object.vy * Math.sin(object.rotation-Math.PI/2);
-	if (object.x > window.innerWidth+2){
+	if (object.x > windowWidth+2){
 		object.x = -1;
 	} else if (object.x < -2){
-		object.x = window.innerWidth+1;
-	} else if (object.y > window.innerHeight+2){
+		object.x = windowWidth+1;
+	} else if (object.y > windowHeight+2){
 		object.y = -1;
 	} else if (object.y < -2){
-		object.y = window.innerHeight +1;
+		object.y = windowHeight +1;
 	}
 
 }
@@ -128,14 +129,14 @@ function boidsBehavior(delta){
 				}
 				else if ( dist <= dist_orienting ){
 					sumR += (b.rotation - a.rotation)*moveSpeed*delta*(1/dist);
-					sumVx += (b.vx - a.vx)*moveSpeed*delta*(1/dist);
-					sumVy += (b.vy - a.vy)*moveSpeed*delta*(1/dist);
+					sumVx += (b.vx - a.vx)*moveSpeed*0.2*delta*(1/dist);
+					sumVy += (b.vy - a.vy)*moveSpeed*0.2*delta*(1/dist);
 					numMate++;
 				}
 				else if ( dist <= dist_attract ){
-					sumR += (tan - a.rotation)*moveSpeed*delta*(1/dist);
-					sumVx += (b.vx - a.vx)*moveSpeed*delta*(1/dist);
-					sumVy += (b.vy - a.vy)*moveSpeed*delta*(1/dist);
+					sumR += (tan - a.rotation)*moveSpeed**delta*(1/dist);
+					sumVx += (b.vx - a.vx)*moveSpeed*0.2*delta*(1/dist);
+					sumVy += (b.vy - a.vy)*moveSpeed*0.2*delta*(1/dist);
 					numMate++;
 				}
 			}
