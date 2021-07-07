@@ -26,10 +26,10 @@ loader
 	.load(setup);
 
 const dist_repulsive = 10;
-const dist_orienting = 25;
+const dist_orienting = 35;
 const dist_attract = 50;
 let boids = [], bg;
-let num = 150;
+let num = 60;
 let state;
 let boid_container = new PIXI.Container();
 
@@ -49,8 +49,8 @@ function setup(){
 		boid.anchor.set(0.5);
 		boid.x = Math.random()*app.screen.width;
 		boid.y = Math.random()*app.screen.height;
-		boid.vx = Math.random()*5;
-		boid.vy = Math.random()*5;
+		boid.vx = Math.random()*3;
+		boid.vy = Math.random()*3;
 		boid.rotation = Math.random()*Math.PI*2;
 		boid.scale.x = 0.25;
 		boid.scale.y = 0.25;
@@ -59,7 +59,7 @@ function setup(){
 	}
 
 	app.stage.addChild(boid_container);
-	bg.mask = boid;
+	bg.mask = boid_container;
 	state = play;
 	app.stage.addChild(bg);
 	app.ticker.add(delta => boidLoop(delta));
@@ -118,12 +118,12 @@ function boidsBehavior(delta){
 		sumVy = 0;
 		for (let j = 0;j < num; j++){
 			let b = boids[j];
-			let tan = ((b.x - a.x) != 0 ? Math.atan((b.y - a.y)/(b.x - a.x)) : Math.PI);
+			let tan = Math.atan2((b.y - a.y),(b.x - a.x))
 			let dist = distanceBetweenTwoBoids(a, b);
 
-			if (dist != 0){
+			if (boids[i] != boids[j]){ 
 				if (dist <= dist_repulsive){
-					sumR += ((tan - Math.PI) - a.rotation)*moveSpeed*0.5*delta*(1/dist);
+					sumR += ((tan - Math.PI) - a.rotation)*moveSpeed*delta*(1/dist);
 					numMate++;
 				}
 				else if ( dist <= dist_orienting ){
